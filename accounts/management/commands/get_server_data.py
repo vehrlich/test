@@ -18,7 +18,8 @@ class Command(BaseCommand):
         #create url with headers and get response from request
         req = urllib2.Request(
             "%s?username=%s&api_key=%s" % 
-            (settings.NL_SETTINGS['url'], settings.NL_SETTINGS['username'], settings.NL_SETTINGS['api_key'])
+            (settings.NL_SETTINGS['url'], settings.NL_SETTINGS['username'],
+             settings.NL_SETTINGS['api_key'])
             )
         
         req.add_header('Accept','application/json')
@@ -48,7 +49,7 @@ class Command(BaseCommand):
             account.resource_uri = object_data['resource_uri']
             account.street_number = object_data['street_number']
             account.tr_input_method = object_data['tr_input_method']
-            account.tr_ip_address = object_data['tr_ip_address']
+            account.ip_address = object_data['ip_address']
             account.tr_language = object_data['tr_language']
             account.utm_campaign = object_data['utm_campaign']
             account.utm_medium = object_data['utm_medium']
