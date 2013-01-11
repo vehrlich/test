@@ -1,3 +1,7 @@
+import json
+import requests
+
+from django.conf import settings
 from django.db import models
 from django.core import serializers
 
@@ -16,7 +20,7 @@ class Account(models.Model):
     mailing_lists = models.ManyToManyField('MailingList', verbose_name="Mailing lists", null=True, blank=True)
     tr_input_method = models.CharField(verbose_name="Input method", max_length=20, null=True, blank=True)
     tr_referral = models.ForeignKey('Referral', verbose_name="Referral", null=False, blank=False)
-    tr_ip_address = models.IPAddressField(verbose_name="IP address", null=True, blank=True)
+    ip_address = models.IPAddressField(verbose_name="IP address", null=False, blank=False)
     tr_language = models.CharField(verbose_name="Language", max_length=5, null=True, blank=True)
     utm_campaign = models.CharField(verbose_name="UTM Campaign", max_length=100, null=True, blank=True)
     utm_medium = models.CharField(verbose_name="UTM Medium", max_length=100, null=True, blank=True)
@@ -49,8 +53,36 @@ class Account(models.Model):
         cut_serialize_output = serialize_output[start_pos:len(serialize_output)-2]
         #email is as pk in string output. So add email to string
         cut_serialize_output = '{"email":"%s", %s' % (self.email, cut_serialize_output)
-        print(cut_serialize_output)
-        #TODO send data to server
+        #ok another hack. Server script could not handle more mailing lists.
+        #so every outgoing object will have 'mailing_list':'2'
+        start_cut = cut_serialize_output.find("[")
+        end_cut = cut_serialize_output.find("]") + 1 
+        
+        cut_serialize_output = "".join([cut_serialize_output[0:start_cut], 
+                                        '2', 
+                                        cut_serialize_output[end_cut:len(cut_serialize_output)]]) 
+        
+        #send data to server
+        url = "%s?username=%s\&api_key=%s" % (
+            settings.NL_SETTINGS['url'], settings.NL_SETTINGS['username'], 
+            settings.NL_SETTINGS['api_key'])
+        
+        headers = {'Content-Type': 'application/json', 
+                   'Accept': 'application/json'}
+
+        try:
+            req = requests.post(url, data=cut_serialize_output, headers=headers)
+            req.raise_for_status()
+        except:
+            #TODO add HTTPError etc.
+            pass
+        
+        #try to catch bad status codes (authorization, etc)
+        try:
+            req.raise_for_status()
+        except:
+            #TODO print error message to user
+            print (req.status_codeL)
 #endclass
 
 class Referral(models.Model):
@@ -61,22 +93,16 @@ class Referral(models.Model):
         return self.name
     
     def natural_key(self):
-        return {'name':self.name, 'resource_uri':self.resource_uri}
-    
+        return self.name
 #endclass
 
 class MailingList(models.Model):
-    #objects = MailingListManager()
-    
     name=models.CharField(verbose_name="Name", primary_key=True, max_length=100)
     resource_uri=models.CharField(verbose_name="Resource URI", max_length=100)
     
     def natural_key(self):
-        return {'name':self.name, 'resource_uri':self.resource_uri}
+        return self.name
     
     def __str__(self):
         return self.name
-    
-    #class Meta:
-    #    unique_together = (('name', 'resource_uri'),)
 #endclass
