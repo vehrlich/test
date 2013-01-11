@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib import messages
 
 from accounts.models import Account
 from accounts.models import Referral
@@ -14,7 +15,13 @@ class AccountAdmin(admin.ModelAdmin):
         ('', {'fields': ['lead']})
     ]
     readonly_fields = ('lead',)
- 
+
+    def save_model(self, request, obj, form, change):
+        """Save model method to handle error codes from model save"""
+        return_code = obj.save()
+        messages.error(request,"Return code is %s, data was not sent to \
+                          server" % return_code)
+
 admin.site.register(Account, AccountAdmin)
 admin.site.register(Referral)
 admin.site.register(MailingList)
