@@ -1,4 +1,3 @@
-import json
 import requests
 
 from django.conf import settings
@@ -41,6 +40,8 @@ class Account(models.Model):
         """
         Override save method. After save send data to server.
         Lead parameter is set to False.
+
+        return: error code of POST HTTP request
         """
         #after edit record is not lead
         if self.lead:
@@ -48,6 +49,7 @@ class Account(models.Model):
         
         super(Account, self).save(*args,  **kwargs)    
         serialize_output = serializers.serialize('json', [self], use_natural_keys=True)
+
         #serialize output has parts which server do not accept, send only fields
         start_pos = serialize_output.find("fields") + 10
         cut_serialize_output = serialize_output[start_pos:len(serialize_output)-2]
@@ -81,8 +83,13 @@ class Account(models.Model):
         try:
             req.raise_for_status()
         except:
-            #TODO print error message to user
-            print (req.status_codeL)
+            #only pass - error message will be shown to user, data are saved
+            #only locally
+            pass
+
+        return req.status_code
+    #enddef
+
 #endclass
 
 class Referral(models.Model):
