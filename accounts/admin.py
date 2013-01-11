@@ -9,7 +9,7 @@ class AccountAdmin(admin.ModelAdmin):
     
     fieldsets = [
         ('Account', {'fields': ['first_name', 'last_name', 'email', 'street_number', 'city', 'zipcode', 'country', 'phone', 'birth_date', 'gender', 'mailing_lists', 'resource_uri']}),
-        ('TR', {'fields': ['tr_input_method', 'tr_referral', 'tr_ip_address', 'tr_language'], 'classes': ['collapse']}),
+        ('TR', {'fields': ['tr_input_method', 'tr_referral', 'ip_address', 'tr_language'], 'classes': ['collapse']}),
         ('UTM',{'fields': ['utm_campaign', 'utm_medium', 'utm_source'], 'classes': ['collapse']}),
         ('', {'fields': ['lead']})
     ]
